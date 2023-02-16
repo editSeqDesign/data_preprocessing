@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 ```shell
 
-git clone {}
+git clone http://172.16.25.29/database-network/data_preprocessing.git
 cd data_preprocessing
 
 python parse_input_to_df.py -i ./input/config.json
