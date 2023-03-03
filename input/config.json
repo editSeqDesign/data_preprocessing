@@ -1,11 +1,5 @@
 {
     "input_file_path":"./input/editor_info.csv",
     "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
-    "data_preprocessing_workdir": "./output/",
-    "uha_dha_config": {
-        "max_right_arm_seq_length": 1050,
-        "max_left_arm_seq_length": 1050,
-        "min_left_arm_seq_length": 1000,
-        "min_right_arm_seq_length": 1000
-    }
+    "data_preprocessing_workdir": "./output/"
 }

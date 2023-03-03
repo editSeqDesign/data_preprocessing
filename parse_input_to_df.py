@@ -15,14 +15,15 @@ def revComp(seq):
     revcompSeq = complementSeq[::-1]
     return revcompSeq
 
-
 def conf_read(filename): 
     config = configparser.ConfigParser()
     config.read(filename)
     res = dict(config._sections["point"])
     return res
 
-def input_to_primer_template(input_file_path, genome,config,workdir):
+
+
+def input_to_primer_template(input_file_path, genome,workdir):
     """
     Arguments:
         input_file_path[str]:  input information
@@ -70,6 +71,7 @@ def input_to_primer_template(input_file_path, genome,config,workdir):
             record_dict = SeqIO.to_dict(SeqIO.parse(genome, "fasta"))
             blast_search_dict = blast_search(input_file_path,genome,workdir)
             df=pd.read_csv(input_file_path)
+
             num_lines_df=df.shape[0]
             for i in range(num_lines_df):
                 data=df.loc[i].values
@@ -111,16 +113,22 @@ def input_to_primer_template(input_file_path, genome,config,workdir):
                             strand = "+"
                         chrom = blast_search_dict[mun_id]["chrom"]
                         mutation_pos_index = upstream_start_index + len(upstream)
+
+
                         # get mutation info dict
                         res = create_mutation_info(
                             record,mutation_type,mutation_pos_index,
                             ref,alt,strand,chrom,
-                            name,mun_id,config
+                            name,mun_id
                             )
+
+                            
                         if isinstance(res,str):
                             blast_error_handler.write(mun_id+'\t'+res+'\n')
                         else:
                             primer_template[mun_id] = res
+
+
         elif 'Chr,Pos,Strand' in input_header:
             # input type 2: vcf
             print('processing vcf input file ...')
@@ -154,7 +162,7 @@ def input_to_primer_template(input_file_path, genome,config,workdir):
                     res = create_mutation_info(
                         record,mutation_type,mutation_pos_index,
                         ref,alt,strand,chrom,
-                        name,mun_id,config
+                        name,mun_id
                         )
                     if isinstance(res,str):
                         blast_error_handler.write(mun_id + '\t'+ res +'\n')
@@ -164,6 +172,10 @@ def input_to_primer_template(input_file_path, genome,config,workdir):
             error_message = "The input file format not supported, Please rightly prepare input file for target manipulation as the example of 2,3-BD."
             return  error_message
     return primer_template
+
+
+
+
 
 def blast_search(input_file_path,genome,workdir):
     """
@@ -239,7 +251,9 @@ def blast_search(input_file_path,genome,workdir):
                     dictall[key]["description"] += '%s:%s-%s;' %(chrom,start,end)
     return dictall
 
-def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,chrom,name,mun_id,config):
+
+
+def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,chrom,name,mun_id):
     """
     Arguments:
         record[str]: mutation site located genome
@@ -263,23 +277,9 @@ def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,
             "dha_downstream":seq_dha_max_whole  down 100bp sequence,
         }
     
-    """
-    max_left_arm_seq_length=int(config['max_left_arm_seq_length'])
-    max_right_arm_seq_length=int(config['max_right_arm_seq_length'])
-
-    # length 
-    if mutation_pos_index - max_left_arm_seq_length < 0:
-        error_message = "The length of upstream sequence of manipulation site of " + mun_id + " must be larger than sum of 'Max Length of UHA' and 'Max Length of UIS'."
-        return error_message
-    
+    """    
     if mutation_type ==  "insertion":
         info_dict = {
-            "seq_uha_max_whole":str(record[
-                mutation_pos_index - max_left_arm_seq_length : mutation_pos_index
-            ]),
-            "seq_dha_max_whole":str(record[
-                mutation_pos_index : mutation_pos_index + max_right_arm_seq_length
-            ]),
             "seq_altered":alt,
             "type":mutation_type,
             "ref":ref,
@@ -287,18 +287,7 @@ def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,
             "mutation_pos_index":mutation_pos_index,
             "geneid":chrom,
             "name":name,
-            "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref)),
-            "uha_upstream":str(  
-                record[
-                    mutation_pos_index - max_left_arm_seq_length - 100 : mutation_pos_index - max_left_arm_seq_length
-                ]
-            ),
-            "dha_downstream":str(
-                record[
-                    mutation_pos_index + max_right_arm_seq_length  : mutation_pos_index + max_right_arm_seq_length  + 100
-                ]
-            ),
-
+            "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref))
         }
         return info_dict      
 
@@ -308,14 +297,6 @@ def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,
         # print(genome_ref)
         if genome_ref.upper() == ref.upper():
             info_dict = {
-                "seq_uha_max_whole":str(record[
-                    mutation_pos_index 
-                    - max_left_arm_seq_length :mutation_pos_index
-                    ]),
-                "seq_dha_max_whole":str(record[
-                    mutation_pos_index + len(ref)
-                    : mutation_pos_index + len(ref) + max_right_arm_seq_length
-                    ]),
                 "seq_altered":"" if alt=='-' else alt,
                 "type":mutation_type,
                 "ref":ref,
@@ -323,20 +304,7 @@ def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,
                 "mutation_pos_index":mutation_pos_index,
                 "geneid":chrom,
                 "name":name,   
-                "region": chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref)),
-                "uha_upstream":str(  
-                    record[
-                        mutation_pos_index 
-                    - max_left_arm_seq_length - 100
-                    : mutation_pos_index 
-                    - max_left_arm_seq_length
-
-                    ]),
-                "dha_downstream":str(
-                    record[
-                        mutation_pos_index + len(ref) + max_right_arm_seq_length
-                        : mutation_pos_index + len(ref) + max_right_arm_seq_length + 100
-                    ]),
+                "region": chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref))
             }
             return info_dict
         else:
@@ -345,6 +313,23 @@ def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,
     else:
         error_message = "The target manipulation type of " + mun_id + " must be equal to 'insertion,substitution or deletion', Please rightly prepare input file for target manipulation as the example of 2,3-BD."
         return  error_message
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def dict_to_df(dict_input_seq):
     info_input_df = pd.DataFrame()
@@ -356,23 +341,21 @@ def dict_to_df(dict_input_seq):
     return info_input_df
 
 
+def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_file_chopchopInput_workdir, chopchop_input):
 
-def execute_input_2_chopchop_input(input_file_path, uha_dha_config, genome_path, convert_input_file_chopchopInput_workdir, chopchop_input):
-    crispr_info = pd.read_csv(input_file_path)
-    config = uha_dha_config
-    dict_input_seq = input_to_primer_template(input_file_path,genome_path,config, convert_input_file_chopchopInput_workdir)
+    dict_input_seq = input_to_primer_template(input_file_path,genome_path, convert_input_file_chopchopInput_workdir)
     info_input_df = dict_to_df(dict_input_seq)
     info_input_df.to_csv(chopchop_input)
+  
 
 
 
-def main(data):
 
-    input_file_path = data['input_file_path']
-    uha_dha_config = data['uha_dha_config']
+def main(data): 
     genome_path = data['ref_genome']
     convert_input_file_chopchopInput_workdir = data['data_preprocessing_workdir']
-    
+    input_file_path = data['input_file_path']
+   
     if not os.path.exists(convert_input_file_chopchopInput_workdir):
         os.makedirs(convert_input_file_chopchopInput_workdir)
     chopchop_input =os.path.join(
@@ -380,7 +363,7 @@ def main(data):
         'info_input.csv'
     )
     
-    execute_input_2_chopchop_input(input_file_path, uha_dha_config, genome_path, convert_input_file_chopchopInput_workdir, chopchop_input)
+    execute_input_2_chopchop_input(input_file_path,genome_path, convert_input_file_chopchopInput_workdir, chopchop_input)
     return chopchop_input
 
 if __name__ == '__main__':
