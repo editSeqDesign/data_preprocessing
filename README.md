@@ -8,3 +8,5 @@ The coordinates of the editing region on the genome are located according to the
 ## Software
 $ pip install requirements.txt
 
+## use
+python parse_input_to_df -i ./input/config.json
