@@ -345,12 +345,12 @@ def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_
 
     dict_input_seq = input_to_primer_template(input_file_path,genome_path, convert_input_file_chopchopInput_workdir)
     info_input_df = dict_to_df(dict_input_seq)
-    info_input_df.to_csv(chopchop_input)
+    info_input_df.to_csv(chopchop_input,index=False)
   
 
 
 
-
+  
 def main(data): 
     genome_path = data['ref_genome']
     convert_input_file_chopchopInput_workdir = data['data_preprocessing_workdir']
@@ -367,11 +367,19 @@ def main(data):
     return chopchop_input
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--input', '-i', help='input params file', required=True) 
-    args = parser.parse_args()
-    input_path =  args.input
-    with open(input_path, "r") as f:
-        data = json.load(f)
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--input', '-i', help='input params file', required=True) 
+    # args = parser.parse_args()
+    # input_path =  args.input
+    # with open(input_path, "r") as f:
+    #     data = json.load(f)
 
-    main(data)  
+    # main(data)
+    data = {
+                "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info.csv",
+                "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/"
+            }
+    main(data)
+
+       
