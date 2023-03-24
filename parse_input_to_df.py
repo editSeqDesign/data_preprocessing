@@ -10,6 +10,7 @@ import argparse
 import json
 
 
+
 def revComp(seq):
     complementSeq=seq.translate(str.maketrans('ACGTacgtRYMKrymkVBHDvbhd', 'TGCAtgcaYRKMyrkmBVDHbvdh'))
     revcompSeq = complementSeq[::-1]
@@ -22,8 +23,7 @@ def conf_read(filename):
     return res
 
 
-
-def input_to_primer_template(input_file_path, genome,workdir):
+def input_to_primer_template(input_file_path, genome, workdir, sence):
     """
     Arguments:
         input_file_path[str]:  input information
@@ -43,7 +43,7 @@ def input_to_primer_template(input_file_path, genome,workdir):
             "key2":{
                 "seq_uha_max_whole":"",
                 "seq_dha_max_whole":"",
-                "seq_altered":"",
+                "seq_altered":"",  
                 "type":"",
                 "ref":"",
                 "uha_upstream": seq_uha_max_whole  up 100bp  sequence,
@@ -77,17 +77,18 @@ def input_to_primer_template(input_file_path, genome,workdir):
                 data=df.loc[i].values
                 #print(data)
                 mun_id=str(data[0])
-                if len(data) < 5:
+                if len(data) < 2:
                     error_message = "Some necessary input information is missing in the line "+mun_id+" of the input file"
                     print(error_message)
                     return  error_message
                 else:
                     upstream = data[1].strip().upper()
                     ref = data[2]
-                    alt = data[3]
-                    mutation_type = data[4].strip().lower()
                     name = mun_id
-                    
+                    if sence == 'both_sgRNA_primer' or sence == 'only_primer':
+                        alt = data[3]
+                        mutation_type = data[4].strip().lower()
+                       
                     if mun_id not in blast_search_dict:
                         # no blast
                         error_message = "The upstream sequence of " + mun_id + " can not be mapped to the target genome. please check whether the target sequence is located on the target genome."
@@ -116,11 +117,18 @@ def input_to_primer_template(input_file_path, genome,workdir):
 
 
                         # get mutation info dict
-                        res = create_mutation_info(
-                            record,mutation_type,mutation_pos_index,
-                            ref,alt,strand,chrom,
-                            name,mun_id
-                            )
+
+                        if sence == 'both_sgRNA_primer' or sence == 'only_primer':
+                            res = create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,alt,record,mun_id)
+                        elif sence == 'only_sgRNA':
+                            res =  {
+                                "ref":ref,
+                                "strand":"plus" if strand =="+" else "minus",
+                                "mutation_pos_index":mutation_pos_index,
+                                "geneid":chrom,
+                                "name":name,
+                                "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref))
+                            }
 
                             
                         if isinstance(res,str):
@@ -128,7 +136,7 @@ def input_to_primer_template(input_file_path, genome,workdir):
                         else:
                             primer_template[mun_id] = res
 
-
+  
         elif 'Chr,Pos,Strand' in input_header:
             # input type 2: vcf
             print('processing vcf input file ...')
@@ -172,10 +180,6 @@ def input_to_primer_template(input_file_path, genome,workdir):
             error_message = "The input file format not supported, Please rightly prepare input file for target manipulation as the example of 2,3-BD."
             return  error_message
     return primer_template
-
-
-
-
 
 def blast_search(input_file_path,genome,workdir):
     """
@@ -252,9 +256,8 @@ def blast_search(input_file_path,genome,workdir):
     return dictall
 
 
-
-def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,chrom,name,mun_id):
-    """
+def create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,alt,record,mun_id):
+    """  
     Arguments:
         record[str]: mutation site located genome
         mutation_type[str]: deletion insertion substitution
@@ -275,9 +278,9 @@ def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,
             "ref":"",
             "uha_upstream": seq_uha_max_whole  up 100bp  sequence,
             "dha_downstream":seq_dha_max_whole  down 100bp sequence,
-        }
+        }   
     
-    """    
+    """   
     if mutation_type ==  "insertion":
         info_dict = {
             "seq_altered":alt,
@@ -313,57 +316,52 @@ def create_mutation_info(record,mutation_type,mutation_pos_index,ref,alt,strand,
     else:
         error_message = "The target manipulation type of " + mun_id + " must be equal to 'insertion,substitution or deletion', Please rightly prepare input file for target manipulation as the example of 2,3-BD."
         return  error_message
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
 
 def dict_to_df(dict_input_seq):
     info_input_df = pd.DataFrame()
     for item in dict_input_seq:
         df = pd.DataFrame([dict_input_seq[item]])
-        df.insert(loc=0,value=item,column='id')
+        # df.insert(loc=0,value=item,column='id')
         info_input_df = info_input_df.append(df)
     info_input_df = info_input_df.reset_index(drop=True)
     return info_input_df
 
 
-def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_file_chopchopInput_workdir, chopchop_input):
+def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, sence):
 
-    dict_input_seq = input_to_primer_template(input_file_path,genome_path, convert_input_file_chopchopInput_workdir)
+
+    before_info_input_df = pd.read_csv(input_file_path)
+    before_info_input_df.columns = [i.lower() for i in before_info_input_df.columns]
+
+    dict_input_seq = input_to_primer_template(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, sence)
     info_input_df = dict_to_df(dict_input_seq)
+    if sence == 'only_primer':
+        info_input_df = pd.merge(before_info_input_df[['name','crrna']],info_input_df,on='name',how='inner')
+
     info_input_df.to_csv(chopchop_input,index=False)
   
 
-
-
-  
 def main(data): 
+
     genome_path = data['ref_genome']
     convert_input_file_chopchopInput_workdir = data['data_preprocessing_workdir']
     input_file_path = data['input_file_path']
-   
+    sence = data['sence']   
+
+    # if sence == 'only_sgRNA':
+    #     input_file_path = only_sgRNA_input_file_path
+    # elif sence == 'both_sgRNA_primer':
+    #     input_file_path = both_sgRNA_primer_input_file_path
+    
     if not os.path.exists(convert_input_file_chopchopInput_workdir):
         os.makedirs(convert_input_file_chopchopInput_workdir)
     chopchop_input =os.path.join(
         data['data_preprocessing_workdir'],
         'info_input.csv'
     )
-    
-    execute_input_2_chopchop_input(input_file_path,genome_path, convert_input_file_chopchopInput_workdir, chopchop_input)
+    print('场景：',sence)
+    execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, sence)
     return chopchop_input
 
 if __name__ == '__main__':
@@ -373,13 +371,27 @@ if __name__ == '__main__':
     # input_path =  args.input
     # with open(input_path, "r") as f:
     #     data = json.load(f)
-
     # main(data)
-    data = {
+    data1 = {
                 "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info.csv",
                 "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/"
+                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "sence":"only_sgRNA",  
             }
-    main(data)
+    data2 = {
+                "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info123.csv",
+                "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "sence":"both_sgRNA_primer",
+            }
+    data3 = {
+                "input_file_path":"/home/yanghe/program/data_preprocessing/input/sgRNA_editing_info.csv",
+                "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "sence":"only_primer",
+            }  
+    main(data2)
+
+
 
        

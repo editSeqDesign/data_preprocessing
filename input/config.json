@@ -1,4 +1,5 @@
 {
+    "sence":"only_sgRNA",
     "input_file_path":"./input/editor_info.csv",
     "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
     "data_preprocessing_workdir": "./output/"
