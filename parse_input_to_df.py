@@ -23,7 +23,7 @@ def conf_read(filename):
     return res
 
 
-def input_to_primer_template(input_file_path, genome, workdir, sence):
+def input_to_primer_template(input_file_path, genome, workdir, scene):
     """
     Arguments:
         input_file_path[str]:  input information
@@ -85,7 +85,7 @@ def input_to_primer_template(input_file_path, genome, workdir, sence):
                     upstream = data[1].strip().upper()
                     ref = data[2]
                     name = mun_id
-                    if sence == 'both_sgRNA_primer' or sence == 'only_primer':
+                    if scene == 'both_sgRNA_primer' or scene == 'only_primer':
                         alt = data[3]
                         mutation_type = data[4].strip().lower()
                        
@@ -118,9 +118,9 @@ def input_to_primer_template(input_file_path, genome, workdir, sence):
 
                         # get mutation info dict
 
-                        if sence == 'both_sgRNA_primer' or sence == 'only_primer':
+                        if scene == 'both_sgRNA_primer' or scene == 'only_primer':
                             res = create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,alt,record,mun_id)
-                        elif sence == 'only_sgRNA':
+                        elif scene == 'only_sgRNA':
                             res =  {
                                 "ref":ref,
                                 "strand":"plus" if strand =="+" else "minus",
@@ -328,15 +328,15 @@ def dict_to_df(dict_input_seq):
     return info_input_df
 
 
-def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, sence):
+def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, scene):
 
 
     before_info_input_df = pd.read_csv(input_file_path)
     before_info_input_df.columns = [i.lower() for i in before_info_input_df.columns]
 
-    dict_input_seq = input_to_primer_template(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, sence)
+    dict_input_seq = input_to_primer_template(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, scene)
     info_input_df = dict_to_df(dict_input_seq)
-    if sence == 'only_primer':
+    if scene == 'only_primer':
         info_input_df = pd.merge(before_info_input_df[['name','crrna']],info_input_df,on='name',how='inner')
 
     info_input_df.to_csv(chopchop_input,index=False)
@@ -347,11 +347,11 @@ def main(data):
     genome_path = data['ref_genome']
     convert_input_file_chopchopInput_workdir = data['data_preprocessing_workdir']
     input_file_path = data['input_file_path']
-    sence = data['sence']   
+    scene = data['scene']   
 
-    # if sence == 'only_sgRNA':
+    # if scene == 'only_sgRNA':
     #     input_file_path = only_sgRNA_input_file_path
-    # elif sence == 'both_sgRNA_primer':
+    # elif scene == 'both_sgRNA_primer':
     #     input_file_path = both_sgRNA_primer_input_file_path
     
     if not os.path.exists(convert_input_file_chopchopInput_workdir):
@@ -360,8 +360,8 @@ def main(data):
         data['data_preprocessing_workdir'],
         'info_input.csv'
     )
-    print('场景：',sence)
-    execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, sence)
+    print('场景：',scene)
+    execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, scene)
     return chopchop_input
 
 if __name__ == '__main__':
@@ -376,19 +376,19 @@ if __name__ == '__main__':
                 "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info.csv",
                 "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "sence":"only_sgRNA",  
+                "scene":"only_sgRNA",  
             }
     data2 = {
                 "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info123.csv",
                 "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "sence":"both_sgRNA_primer",
+                "scene":"both_sgRNA_primer",
             }
     data3 = {
                 "input_file_path":"/home/yanghe/program/data_preprocessing/input/sgRNA_editing_info.csv",
                 "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "sence":"only_primer",
+                "scene":"only_primer",
             }  
     main(data2)
 
