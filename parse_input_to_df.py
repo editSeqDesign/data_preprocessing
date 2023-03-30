@@ -6,7 +6,7 @@ warnings.filterwarnings('ignore')
 import configparser
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-import argparse
+import argparse   
 import json
 
 
@@ -93,43 +93,60 @@ def input_to_primer_template(input_file_path, genome, workdir, scene):
                         # no blast
                         error_message = "The upstream sequence of " + mun_id + " can not be mapped to the target genome. please check whether the target sequence is located on the target genome."
                         blast_error_handler.write(mun_id + '\t' +  error_message+ '\n')
+                        return  error_message
                     elif blast_search_dict[mun_id]["unique_mapped"] > 1:
                         # Compare 100 times
                         error_message = "The upstream sequence of " + mun_id + "  can be mapped to multiple loci in the target genome, %s, Please provide a longer upstream seqeunce." % blast_search_dict[mun_id]["description"]
                         blast_error_handler.write(mun_id+'\t'+ error_message+'\n')
+                        return  error_message
                     elif blast_search_dict[mun_id]["unique_mapped"] == 0:
                         # No 100 comparison
-
                         error_message = "The upstream sequence of " + mun_id + " can not be uniquely mapped to the target genome. Please check whether the target sequence is located on the target genome."
                         blast_error_handler.write(mun_id+'\t'+error_message+'\n')
+                        return  error_message
                     elif blast_search_dict[mun_id]["unique_mapped"] == 1:
                         # Index of the base starting to mutate on gene
                         if blast_search_dict[mun_id]["reverse_mapped"]:
                             record = revComp(str(record_dict[blast_search_dict[mun_id]["chrom"]].seq))
                             upstream_start_index = len(record) - int(blast_search_dict[mun_id]["start"])
                             strand = "-"  
+                            error_message = "The upstream sequence of " + mun_id + "can be mapped to the antisense strand.  Please rightly prepare input file for target manipulation as the example of 2,3-BD" 
+                            return  error_message
                         else:
-                            record = str(record_dict[blast_search_dict[mun_id]["chrom"]].seq)
+                            record = str(record_dict[blast_search_dict[mun_id]["chrom"]].seq)   
                             upstream_start_index = int(blast_search_dict[mun_id]["start"])-1
                             strand = "+"
                         chrom = blast_search_dict[mun_id]["chrom"]
                         mutation_pos_index = upstream_start_index + len(upstream)
 
-
-                        # get mutation info dict
+                        # get mutation info dict 
 
                         if scene == 'both_sgRNA_primer' or scene == 'only_primer':
                             res = create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,alt,record,mun_id)
                         elif scene == 'only_sgRNA':
-                            res =  {
-                                "ref":ref,
-                                "strand":"plus" if strand =="+" else "minus",
-                                "mutation_pos_index":mutation_pos_index,
-                                "geneid":chrom,
-                                "name":name,
-                                "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref))
-                            }
-
+                            if ref != '-':
+                                genome_ref = record[mutation_pos_index:mutation_pos_index+len(ref)]  
+                                if genome_ref.upper() == ref.upper():
+                                    res =  {
+                                        "ref":ref,
+                                        "strand":"plus" if strand =="+" else "minus",
+                                        "mutation_pos_index":mutation_pos_index,
+                                        "geneid":chrom,
+                                        "name":name,
+                                        "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref))
+                                    }
+                                else:
+                                    error_message = "The target mutation ref of " + mun_id + " can not be found in reference, please check."
+                                    return error_message  
+                            else:
+                                res =  {
+                                        "ref":ref,
+                                        "strand":"plus" if strand =="+" else "minus",
+                                        "mutation_pos_index":mutation_pos_index,
+                                        "geneid":chrom,
+                                        "name":name,
+                                        "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref))
+                                    }
                             
                         if isinstance(res,str):
                             blast_error_handler.write(mun_id+'\t'+res+'\n')
@@ -330,17 +347,25 @@ def dict_to_df(dict_input_seq):
 
 def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, scene):
 
-
     before_info_input_df = pd.read_csv(input_file_path)
     before_info_input_df.columns = [i.lower() for i in before_info_input_df.columns]
 
     dict_input_seq = input_to_primer_template(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, scene)
-    info_input_df = dict_to_df(dict_input_seq)
-    if scene == 'only_primer':
-        info_input_df = pd.merge(before_info_input_df[['name','crrna']],info_input_df,on='name',how='inner')
-
-    info_input_df.to_csv(chopchop_input,index=False)
-  
+    
+    if type(dict_input_seq) != str:
+         
+        info_input_df = dict_to_df(dict_input_seq)
+        if scene == 'only_primer':
+            info_input_df = pd.merge(before_info_input_df[['name','crrna']],info_input_df,on='name',how='inner')
+        info_input_df.to_csv(chopchop_input,index=False)
+        success_message = 'Successful design of data_preprocessing module'
+        print(success_message)  
+        return success_message
+    else:
+        error_message = dict_input_seq 
+        print(error_message)
+        return error_message
+    
 
 def main(data): 
 
@@ -349,14 +374,14 @@ def main(data):
     input_file_path = data['input_file_path']
     scene = data['scene']   
 
-    # if scene == 'only_sgRNA':
+    # if scene == 'only_sgRNA':  
     #     input_file_path = only_sgRNA_input_file_path
     # elif scene == 'both_sgRNA_primer':
     #     input_file_path = both_sgRNA_primer_input_file_path
     
     if not os.path.exists(convert_input_file_chopchopInput_workdir):
         os.makedirs(convert_input_file_chopchopInput_workdir)
-    chopchop_input =os.path.join(
+    chopchop_input =os.path.join(  
         data['data_preprocessing_workdir'],
         'info_input.csv'
     )
@@ -365,13 +390,7 @@ def main(data):
     return chopchop_input
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--input', '-i', help='input params file', required=True) 
-    # args = parser.parse_args()
-    # input_path =  args.input
-    # with open(input_path, "r") as f:
-    #     data = json.load(f)
-    # main(data)
+
     data1 = {
                 "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info.csv",
                 "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
@@ -390,7 +409,7 @@ if __name__ == '__main__':
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"only_primer",
             }  
-    main(data2)
+    main(data1)      
 
 
 
