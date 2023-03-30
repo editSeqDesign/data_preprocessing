@@ -79,6 +79,7 @@ def input_to_primer_template(input_file_path, genome, workdir, scene):
                 mun_id=str(data[0])
                 if len(data) < 2:
                     error_message = "Some necessary input information is missing in the line "+mun_id+" of the input file"
+                    raise ValueError(error_message)
                     print(error_message)
                     return  error_message
                 else:
@@ -93,16 +94,19 @@ def input_to_primer_template(input_file_path, genome, workdir, scene):
                         # no blast
                         error_message = "The upstream sequence of " + mun_id + " can not be mapped to the target genome. please check whether the target sequence is located on the target genome."
                         blast_error_handler.write(mun_id + '\t' +  error_message+ '\n')
+                        raise ValueError(error_message)
                         return  error_message
                     elif blast_search_dict[mun_id]["unique_mapped"] > 1:
                         # Compare 100 times
                         error_message = "The upstream sequence of " + mun_id + "  can be mapped to multiple loci in the target genome, %s, Please provide a longer upstream seqeunce." % blast_search_dict[mun_id]["description"]
                         blast_error_handler.write(mun_id+'\t'+ error_message+'\n')
+                        raise ValueError(error_message)
                         return  error_message
                     elif blast_search_dict[mun_id]["unique_mapped"] == 0:
                         # No 100 comparison
                         error_message = "The upstream sequence of " + mun_id + " can not be uniquely mapped to the target genome. Please check whether the target sequence is located on the target genome."
                         blast_error_handler.write(mun_id+'\t'+error_message+'\n')
+                        raise ValueError(error_message)
                         return  error_message
                     elif blast_search_dict[mun_id]["unique_mapped"] == 1:
                         # Index of the base starting to mutate on gene
@@ -111,6 +115,7 @@ def input_to_primer_template(input_file_path, genome, workdir, scene):
                             upstream_start_index = len(record) - int(blast_search_dict[mun_id]["start"])
                             strand = "-"  
                             error_message = "The upstream sequence of " + mun_id + "can be mapped to the antisense strand.  Please rightly prepare input file for target manipulation as the example of 2,3-BD" 
+                            raise ValueError(error_message)
                             return  error_message
                         else:
                             record = str(record_dict[blast_search_dict[mun_id]["chrom"]].seq)   
@@ -137,6 +142,7 @@ def input_to_primer_template(input_file_path, genome, workdir, scene):
                                     }
                                 else:
                                     error_message = "The target mutation ref of " + mun_id + " can not be found in reference, please check."
+                                    raise ValueError(error_message)
                                     return error_message  
                             else:
                                 res =  {
@@ -195,6 +201,7 @@ def input_to_primer_template(input_file_path, genome, workdir, scene):
                         primer_template[mun_id] = res
         else:
             error_message = "The input file format not supported, Please rightly prepare input file for target manipulation as the example of 2,3-BD."
+            raise ValueError(error_message)
             return  error_message
     return primer_template
 
@@ -329,9 +336,11 @@ def create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,
             return info_dict
         else:
             error_message = "The target mutation ref of " + mun_id + " can not be found in reference, please check."
+            raise ValueError(error_message)
             return error_message
     else:
         error_message = "The target manipulation type of " + mun_id + " must be equal to 'insertion,substitution or deletion', Please rightly prepare input file for target manipulation as the example of 2,3-BD."
+        raise ValueError(error_message)
         return  error_message
     
 
@@ -351,20 +360,13 @@ def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_
     before_info_input_df.columns = [i.lower() for i in before_info_input_df.columns]
 
     dict_input_seq = input_to_primer_template(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, scene)
-    
-    if type(dict_input_seq) != str:
-         
-        info_input_df = dict_to_df(dict_input_seq)
-        if scene == 'only_primer':
-            info_input_df = pd.merge(before_info_input_df[['name','crrna']],info_input_df,on='name',how='inner')
-        info_input_df.to_csv(chopchop_input,index=False)
-        success_message = 'Successful design of data_preprocessing module'
-        print(success_message)  
-        return success_message
-    else:
-        error_message = dict_input_seq 
-        print(error_message)
-        return error_message
+      
+    info_input_df = dict_to_df(dict_input_seq)
+    if scene == 'only_primer':
+        info_input_df = pd.merge(before_info_input_df[['name','crrna']],info_input_df,on='name',how='inner')
+    info_input_df.to_csv(chopchop_input,index=False)
+   
+        
     
 
 def main(data): 
