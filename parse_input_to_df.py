@@ -471,7 +471,6 @@ def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_
     info_input_df.to_csv(chopchop_input,index=False)
    
         
-    
 
 def main(data): 
 
