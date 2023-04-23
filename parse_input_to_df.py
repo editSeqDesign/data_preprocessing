@@ -271,26 +271,37 @@ def input_to_primer_template(input_file_path, genome, workdir, scene, gb_file=''
             #input type 3: region
 
             df=pd.read_csv(input_file_path)
-
+           
             for i,v in df.iterrows():
-                
+                    
                 ref, mutation_pos_index, chrom, strand = get_seq_by_geneid(gb_file, v['Gene id'], v['Up region'], v['Down region'])
-                mu_type = v['Manipulation type']
-                seq_altered = v['Inserted sequence']
-                name = v['Name']   
-                res =  {
-                        "name":name,
-                        "ref":ref,
-                        "strand":strand,
-                        "mutation_pos_index":mutation_pos_index,
-                        "geneid":chrom,
-                        "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref)),
-                        "type": mu_type,
-                        "seq_altered":seq_altered
-                        }
-                
-                primer_template[name] = res    
-    
+                if 'Inserted sequence,Manipulation type' in input_header:
+                        mu_type = v['Manipulation type']
+                        seq_altered = v['Inserted sequence']
+                        name = v['Name']   
+                        res =  {
+                                "name":name,
+                                "ref":ref,
+                                "strand":strand,
+                                "mutation_pos_index":mutation_pos_index,
+                                "geneid":chrom,
+                                "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref)),
+                                "type": mu_type,
+                                "seq_altered":seq_altered
+                                }
+                else:
+                        name = v['Name']   
+                        res =  {
+                                "name":name,
+                                "ref":ref,
+                                "strand":strand,
+                                "mutation_pos_index":mutation_pos_index,
+                                "geneid":chrom,
+                                "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref))
+                                }
+                    
+                primer_template[name] = res
+        
         else:
             error_message = "The input file format not supported, Please rightly prepare input file for target manipulation as the example of 2,3-BD."
             raise ValueError(error_message)
