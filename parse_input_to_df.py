@@ -488,7 +488,7 @@ def main(data):
         os.makedirs(convert_input_file_chopchopInput_workdir)
 
     #3.生成成下游任务的输入文件路径
-    chopchop_input =os.path.join(  
+    chopchop_input = os.path.join(  
         data['data_preprocessing_workdir'],
         'info_input.csv'
     )
@@ -497,19 +497,19 @@ def main(data):
     if 'gb' in name:
         genome_fna = basename(path) + '.fna'
         gb_file = genome_path
-        genome_path = os.path.join(convert_input_file_chopchopInput_workdir,genome_fna)
+        genome_path = os.path.join(data['data_preprocessing_workdir'], genome_fna)
         #解析gb文件生成fna文件
         gb_2_fna(gb_file, genome_path)
 
         #5.根据不同场景，解析输入的编辑信息文件生成下游任务的标准输入
         print('场景：',scene)
         execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir,chopchop_input, scene, gb_file)
+        return [chopchop_input, genome_path]
     else:
         #5.根据不同场景，解析输入的编辑信息文件生成下游任务的标准输入
         print('场景：',scene)
         execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir,chopchop_input, scene)
-
-    return chopchop_input
+        return chopchop_input
 
 if __name__ == '__main__':
 
@@ -537,7 +537,8 @@ if __name__ == '__main__':
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"both_sgRNA_primer",
             }   
-    main(data4) 
+    a = main(data4)
+    print(a) 
 
 
 
