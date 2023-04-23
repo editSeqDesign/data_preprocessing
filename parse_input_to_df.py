@@ -8,7 +8,73 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import argparse   
 import json
+from os.path import exists,splitext,dirname,splitext,basename,realpath,abspath
 
+
+
+from Bio import SeqIO
+def gb_2_fna(gb_file,fna_file):
+
+    # 读取 GenBank 文件
+    gb_records = SeqIO.parse(gb_file, "genbank")
+
+    # 将 DNA 序列写入 FASTA 文件
+    
+    with open(fna_file, "w") as output_handle:
+        SeqIO.write(gb_records, output_handle, "fasta")
+
+
+def get_seq_by_geneid(gb_file, gene_id, up_region, down_region):
+    
+    # 提取基因序列和其位置
+    gene_id = gene_id  # 将YOUR_GENE_ID替换为你要提取的基因ID
+    records = SeqIO.parse(gb_file, "genbank")
+
+    ref, mutation_pos_index, chrom, strand = '', '', '', ''
+
+    for record in records:
+
+        for feature in record.features:
+            if feature.type == "gene" and gene_id in feature.qualifiers.get("locus_tag", []):
+                #取序列
+                gene_seq = feature.extract(record.seq)
+                if feature.strand == -1:  # 如果是反义链，则需要取反向互补序列
+                    gene_seq = gene_seq.reverse_complement()
+                
+                #取出染色体上的基因的位置
+                gene_start = feature.location.start.position
+                gene_end = feature.location.end.position
+                
+                start = gene_start + up_region
+                end = gene_end - down_region
+                
+                if start == end:
+                    ref = '-'
+                elif end > start:
+                    print(gene_seq)
+                    gene_seq = str(gene_seq)
+                    
+                    ref = gene_seq[0+up_region : len(gene_seq)-down_region ]
+                    print(start,end)
+                else:
+                    ValueError('There is an issue with the editing location you provided')
+
+                chrom = record.id
+                strand = 'plus'
+                mutation_pos_index = start  
+
+                # #取目标序列的前100bp
+                # start_pos = max(gene_start - 100, 0)
+                # before_gene_seq = record.seq[start_pos:gene_start]
+                
+                # print(f">{gene_id} {record.id}:{gene_start}-{gene_end}\n{ref}")
+                break
+
+        if ref != '':
+            break
+
+
+    return ref, mutation_pos_index, chrom, strand
 
 
 def revComp(seq):
@@ -23,15 +89,15 @@ def conf_read(filename):
     return res
 
 
-def input_to_primer_template(input_file_path, genome, workdir, scene):
+def input_to_primer_template(input_file_path, genome, workdir, scene, gb_file=''):
     """
     Arguments:
         input_file_path[str]:  input information
         genome[str]:  edit reference
-        config[dic]: points information
+        config[dic]: points information   
     Return [dict]
-        {
-            "key1":{
+        {   
+            "key1":{  
                 "seq_uha_max_whole":"",
                 "seq_dha_max_whole":"",
                 "seq_altered":"",
@@ -199,6 +265,32 @@ def input_to_primer_template(input_file_path, genome, workdir, scene):
                         blast_error_handler.write(mun_id + '\t'+ res +'\n')
                     else:
                         primer_template[mun_id] = res
+
+
+        elif 'Gene id,Up region,Down region' in input_header:
+            #input type 3: region
+
+            df=pd.read_csv(input_file_path)
+
+            for i,v in df.iterrows():
+                
+                ref, mutation_pos_index, chrom, strand = get_seq_by_geneid(gb_file, v['Gene id'], v['Up region'], v['Down region'])
+                mu_type = v['Manipulation type']
+                seq_altered = v['Inserted sequence']
+                name = v['Name']   
+                res =  {
+                        "name":name,
+                        "ref":ref,
+                        "strand":strand,
+                        "mutation_pos_index":mutation_pos_index,
+                        "geneid":chrom,
+                        "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref)),
+                        "type": mu_type,
+                        "seq_altered":seq_altered
+                        }
+                
+                primer_template[name] = res    
+    
         else:
             error_message = "The input file format not supported, Please rightly prepare input file for target manipulation as the example of 2,3-BD."
             raise ValueError(error_message)
@@ -321,6 +413,7 @@ def create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,
 #         return info_dict
     if mutation_type in ["deletion","substitution"]:
         genome_ref = record[mutation_pos_index:mutation_pos_index+len(ref)]
+        
         # print(genome_ref)
         if genome_ref.upper() == ref.upper():
             info_dict = {
@@ -354,16 +447,16 @@ def dict_to_df(dict_input_seq):
     return info_input_df
 
 
-def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, scene):
+def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, scene, gb_file=''):
 
     before_info_input_df = pd.read_csv(input_file_path)
     before_info_input_df.columns = [i.lower() for i in before_info_input_df.columns]
 
-    dict_input_seq = input_to_primer_template(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, scene)
+    dict_input_seq = input_to_primer_template(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, scene, gb_file)
       
     info_input_df = dict_to_df(dict_input_seq)
     if scene == 'only_primer':
-        info_input_df = pd.merge(before_info_input_df[['name','crrna']],info_input_df,on='name',how='inner')
+        info_input_df = pd.merge(before_info_input_df[['name','crrna']], info_input_df, on='name', how='inner')
     info_input_df.to_csv(chopchop_input,index=False)
    
         
@@ -371,24 +464,40 @@ def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_
 
 def main(data): 
 
+    #1.读取参数路径
     genome_path = data['ref_genome']
+    path,name = splitext(genome_path)
+
     convert_input_file_chopchopInput_workdir = data['data_preprocessing_workdir']
     input_file_path = data['input_file_path']
-    scene = data['scene']   
+    scene = data['scene']
 
-    # if scene == 'only_sgRNA':  
-    #     input_file_path = only_sgRNA_input_file_path
-    # elif scene == 'both_sgRNA_primer':
-    #     input_file_path = both_sgRNA_primer_input_file_path
-    
+    #2.生成workdir
     if not os.path.exists(convert_input_file_chopchopInput_workdir):
         os.makedirs(convert_input_file_chopchopInput_workdir)
+
+    #3.生成成下游任务的输入文件路径
     chopchop_input =os.path.join(  
         data['data_preprocessing_workdir'],
         'info_input.csv'
     )
-    print('场景：',scene)
-    execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, scene)
+
+    #4.若上传的是基因组gb文件，生成fna文件
+    if 'gb' in name:
+        genome_fna = basename(path) + '.fna'
+        gb_file = genome_path
+        genome_path = os.path.join(convert_input_file_chopchopInput_workdir,genome_fna)
+        #解析gb文件生成fna文件
+        gb_2_fna(gb_file, genome_path)
+
+        #5.根据不同场景，解析输入的编辑信息文件生成下游任务的标准输入
+        print('场景：',scene)
+        execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir,chopchop_input, scene, gb_file)
+    else:
+        #5.根据不同场景，解析输入的编辑信息文件生成下游任务的标准输入
+        print('场景：',scene)
+        execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir,chopchop_input, scene)
+
     return chopchop_input
 
 if __name__ == '__main__':
@@ -411,7 +520,13 @@ if __name__ == '__main__':
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"only_primer",
             }  
-    main(data1)      
+    data4 = {
+                "input_file_path":"/home/yanghe/program/data_preprocessing/input/4-20-input.csv",
+                "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCF_000005845.2_ASM584v2_genomic.gbff",
+                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "scene":"both_sgRNA_primer",
+            }   
+    main(data4) 
 
 
 
