@@ -463,6 +463,7 @@ def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_
     before_info_input_df = pd.read_csv(input_file_path)
     before_info_input_df.columns = [i.lower() for i in before_info_input_df.columns]
 
+    print("基因组:",genome_path)  
     dict_input_seq = input_to_primer_template(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, scene, gb_file)
       
     info_input_df = dict_to_df(dict_input_seq)
