@@ -28,8 +28,9 @@ def get_seq_by_geneid(gb_file, gene_id, up_region, down_region):
     
     # 提取基因序列和其位置
     gene_id = gene_id  # 将YOUR_GENE_ID替换为你要提取的基因ID
+    print('取序列的地址：' ,gb_file)
     records = SeqIO.parse(gb_file, "genbank")
-
+    
     ref, mutation_pos_index, chrom, strand = '', '', '', ''
 
     for record in records:
@@ -73,7 +74,7 @@ def get_seq_by_geneid(gb_file, gene_id, up_region, down_region):
         if ref != '':
             break
 
-
+    print("取到的东西：",ref, mutation_pos_index, chrom, strand)
     return ref, mutation_pos_index, chrom, strand
 
 
@@ -278,7 +279,7 @@ def input_to_primer_template(input_file_path, genome, workdir, scene, gb_file=''
                 if 'Inserted sequence,Manipulation type' in input_header:
                         mu_type = v['Manipulation type']
                         seq_altered = v['Inserted sequence']
-                        name = v['Name']   
+                        name = v['Name']  
                         res =  {
                                 "name":name,
                                 "ref":ref,
@@ -536,8 +537,15 @@ if __name__ == '__main__':
                 "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCF_000005845.2_ASM584v2_genomic.gbff",
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"both_sgRNA_primer",
-            }   
-    a = main(data4)
+            }
+    data5 = {
+                "input_file_path":"/home/yanghe/program/data_preprocessing/input/4-20-input.csv",
+                "ref_genome":"/home/yanghe/program/data_preprocessing/input/参考基因组eco.gb",
+                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "scene":"both_sgRNA_primer",
+            }
+    
+    a = main(data5)
     print(a) 
 
 
