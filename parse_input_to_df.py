@@ -515,39 +515,47 @@ def main(data):
 if __name__ == '__main__':
 
     data1 = {
-                "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info.csv",
-                "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                "input_file_path":"./input/editor_info.csv",
+                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"only_sgRNA",  
             }
     data2 = {
-                "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info123.csv",
-                "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                "input_file_path":"./input/editor_info123.csv",
+                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"both_sgRNA_primer",
             }
     data3 = {
-                "input_file_path":"/home/yanghe/program/data_preprocessing/input/sgRNA_editing_info.csv",
-                "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                "input_file_path":"./input/sgRNA_editing_info.csv",
+                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "scene":"only_primer",
-            }  
-    data4 = {
-                "input_file_path":"/home/yanghe/program/data_preprocessing/input/4-20-input.csv",
-                "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCF_000005845.2_ASM584v2_genomic.gbff",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "scene":"both_sgRNA_primer",
-            }
-    data5 = {
-                "input_file_path":"/home/yanghe/program/data_preprocessing/input/4-20-input.csv",
-                "ref_genome":"/home/yanghe/program/data_preprocessing/input/参考基因组eco.gb",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "scene":"both_sgRNA_primer",
+                "scene":"only_primer",  
             }
     
-    a = main(data5)
-    print(a) 
+    data4 = {
+                "input_file_path":"./input/4-21-input.csv",
+                "ref_genome":"./input/eco.gb",
+                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "scene":"only_sgRNA",
+            }  
+    data5 = {
+                "input_file_path":"./input/4-20-input.csv",
+                "ref_genome":"./input/eco.gb",
+                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "scene":"both_sgRNA_primer",
+            }
+    data6 = {
+                "input_file_path":"./input/4-23-input.csv",
+                "ref_genome":"./input/eco.gb",
+                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "scene":"only_primer",
+            }
+    
+    
+    a = main(data6)
 
+    print(a)
 
 
        
