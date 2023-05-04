@@ -347,7 +347,8 @@ def blast_search(input_file_path,genome,workdir):
     # run blast
     os.system("makeblastdb -in "+genome+" -dbtype nucl -parse_seqids -out "+ref_lib)
     os.system("blastn -query "+input_fasta+" -db "+ref_lib+" -outfmt 6 -task blastn -out "+blast_output_file_path+" -evalue 1e-30 ")
-
+    os.system("rm %s.n*" % ref_lib)
+    
     # return
     dictall = {}
     with open(blast_output_file_path,"r") as f:
