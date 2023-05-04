@@ -32,7 +32,10 @@ This project mainly aims to standardize the editing information uploaded by user
 
 2.When a user uploads a genome gb file and a matching editing information csv file, the system will first convert it into a genome fna file, then extract the editing region sequence based on the editing region provided by the user, and finally output the standardization results to serve downstream work.
 
-    For downstream scenarios: it will be divided into i.designing only sgRNA (only_sgRNA) ii.designing both sgRNA and related primers (both_sgRNA_primer) iii.designing only primer (only_primer)
+    For downstream scenarios: it will be divided into
+                                i.designing only sgRNA (only_sgRNA) 
+                                ii.designing both sgRNA and related primers (both_sgRNA_primer)
+                                iii.designing only primer (only_primer)
 
     i:  data4 = {
                 "input_file_path":"./input/4-21-input.csv",
