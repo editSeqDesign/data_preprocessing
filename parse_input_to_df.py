@@ -23,7 +23,6 @@ def gb_2_fna(gb_file,fna_file):
     with open(fna_file, "w") as output_handle:
         SeqIO.write(gb_records, output_handle, "fasta")
 
-
 def get_seq_by_geneid(gb_file, gene_id, up_region, down_region):
     
     # 提取基因序列和其位置
@@ -77,7 +76,6 @@ def get_seq_by_geneid(gb_file, gene_id, up_region, down_region):
     print("取到的东西：",ref, mutation_pos_index, chrom, strand)
     return ref, mutation_pos_index, chrom, strand
 
-
 def revComp(seq):
     complementSeq=seq.translate(str.maketrans('ACGTacgtRYMKrymkVBHDvbhd', 'TGCAtgcaYRKMyrkmBVDHbvdh'))
     revcompSeq = complementSeq[::-1]
@@ -88,7 +86,6 @@ def conf_read(filename):
     config.read(filename)
     res = dict(config._sections["point"])
     return res
-
 
 def input_to_primer_template(input_file_path, genome, workdir, scene, gb_file=''):
     """
@@ -383,7 +380,6 @@ def blast_search(input_file_path,genome,workdir):
                     dictall[key]["description"] += '%s:%s-%s;' %(chrom,start,end)
     return dictall
 
-
 def create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,alt,record,mun_id):
     """  
     Arguments:
@@ -448,7 +444,6 @@ def create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,
         raise ValueError(error_message)
         return  error_message
     
-
 def dict_to_df(dict_input_seq):
     info_input_df = pd.DataFrame()
     for item in dict_input_seq:
@@ -457,7 +452,6 @@ def dict_to_df(dict_input_seq):
         info_input_df = info_input_df.append(df)
     info_input_df = info_input_df.reset_index(drop=True)
     return info_input_df
-
 
 def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, scene, gb_file=''):
 
@@ -472,8 +466,6 @@ def execute_input_2_chopchop_input(input_file_path,  genome_path, convert_input_
         info_input_df = pd.merge(before_info_input_df[['name','crrna']], info_input_df, on='name', how='inner')
     info_input_df.to_csv(chopchop_input,index=False)
    
-        
-
 def main(data): 
 
     #1.读取参数路径
@@ -556,6 +548,4 @@ if __name__ == '__main__':
     a = main(data6)
 
     print(a)
-
-
-       
+    
