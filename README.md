@@ -24,7 +24,7 @@ This project mainly aims to standardize the editing information uploaded by user
     iii: data3 = {
                 "input_file_path":"./input/sgRNA_editing_info.csv",
                 "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
                 "scene":"only_primer",  
             }
 
@@ -52,7 +52,7 @@ This project mainly aims to standardize the editing information uploaded by user
     iii: data6 = {
                 "input_file_path":"./input/4-23-input.csv",
                 "ref_genome":"./input/eco.gb",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
                 "scene":"only_primer",  
             }
 
