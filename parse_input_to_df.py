@@ -348,7 +348,7 @@ def blast_search(input_file_path,genome,workdir):
     os.system("makeblastdb -in "+genome+" -dbtype nucl -parse_seqids -out "+ref_lib)
     os.system("blastn -query "+input_fasta+" -db "+ref_lib+" -outfmt 6 -task blastn -out "+blast_output_file_path+" -evalue 1e-30 ")
     os.system("rm %s.n*" % ref_lib)
-    
+
     # return
     dictall = {}
     with open(blast_output_file_path,"r") as f:
@@ -497,12 +497,18 @@ def main(data):
 
         #5.根据不同场景，解析输入的编辑信息文件生成下游任务的标准输入
         print('场景：',scene)
-        execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir,chopchop_input, scene, gb_file)
+        execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, scene, gb_file)
         return [chopchop_input, genome_path]
     else:
         #5.根据不同场景，解析输入的编辑信息文件生成下游任务的标准输入
         print('场景：',scene)
-        execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir,chopchop_input, scene)
+        execute_input_2_chopchop_input(input_file_path, genome_path, convert_input_file_chopchopInput_workdir, chopchop_input, scene)
+        
+        genome_name = 'xxx'+ '.fna'
+        genome_path1 = os.path.join(data['data_preprocessing_workdir'], genome_name)
+
+        os.system(f"cp {genome_path} {genome_path1}")
+
         return chopchop_input
 
 if __name__ == '__main__':
@@ -546,7 +552,7 @@ if __name__ == '__main__':
             }
     
     
-    a = main(data6)
+    a = main(data3)
 
-    print(a)
+    print(a)  
     

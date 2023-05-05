@@ -28,7 +28,7 @@ This project mainly aims to standardize the editing information uploaded by user
                 "scene":"only_primer",  
             }
 
-    output: '/home/XXX/tmp/data_preprocessing/output//info_input.csv'
+    output: ['/home/XXX/tmp/data_preprocessing/output/info_input.csv', '/home/XXX/tmp/data_preprocessing/output/xxx.fna']
 
 2.When a user uploads a genome gb file and a matching editing information csv file, the system will first convert it into a genome fna file, then extract the editing region sequence based on the editing region provided by the user, and finally output the standardization results to serve downstream work.
 
@@ -56,7 +56,7 @@ This project mainly aims to standardize the editing information uploaded by user
                 "scene":"only_primer",  
             }
 
-    output: ['/home/yanghe/tmp/data_preprocessing/output/info_input.csv', '/home/yanghe/tmp/data_preprocessing/output/eco.fna']
+    output: ['/home/XXX/tmp/data_preprocessing/output/info_input.csv', '/home/XXX/tmp/data_preprocessing/output/xxx.fna']
 
 ## product enviroment
  python 3.8
