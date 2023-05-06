@@ -552,7 +552,7 @@ if __name__ == '__main__':
             }
     
     
-    a = main(data3)
+    a = main(data6)
 
     print(a)  
     
