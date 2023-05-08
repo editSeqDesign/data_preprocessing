@@ -72,6 +72,9 @@ def get_seq_by_geneid(gb_file, gene_id, up_region, down_region):
 
         if ref != '':
             break
+    if ref == '':
+        error_message = 'The region you will edit is not on the target genome'
+        raise ValueError(error_message)
 
     print("取到的东西：",ref, mutation_pos_index, chrom, strand)
     return ref, mutation_pos_index, chrom, strand
