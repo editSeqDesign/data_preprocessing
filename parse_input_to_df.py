@@ -141,6 +141,7 @@ def input_to_primer_template(input_file_path, genome, workdir, scene, gb_file=''
 
             num_lines_df=df.shape[0]
             for i in range(num_lines_df):
+
                 data=df.loc[i].values
                 #print(data)
                 mun_id=str(data[0])
@@ -150,7 +151,11 @@ def input_to_primer_template(input_file_path, genome, workdir, scene, gb_file=''
                     print(error_message)
                     return  error_message
                 else:
-                    upstream = data[1].strip().upper()
+                    if type(data[1] ) != 'str':
+                        print(  type(data[1] ), data[1], "?????????????????????????????")
+                     
+
+                    upstream = data[1].strip().upper()   
                     ref = data[2]
                     name = mun_id
                     if scene == 'both_sgRNA_primer' or scene == 'only_primer':
