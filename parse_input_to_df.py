@@ -10,9 +10,20 @@ import argparse
 import json
 from os.path import exists,splitext,dirname,splitext,basename,realpath,abspath
 
-
-
 from Bio import SeqIO
+
+
+def del_Unnamed(df):
+    """
+    Deletes all the unnamed columns
+
+    :param df: pandas dataframe
+    """
+    cols_del=[c for c in df.columns if 'Unnamed' in c]
+    return df.drop(cols_del,axis=1)
+
+
+
 def gb_2_fna(gb_file,fna_file):
 
     # 读取 GenBank 文件
@@ -43,25 +54,32 @@ def get_seq_by_geneid(gb_file, gene_id, up_region, down_region):
                 
                 #取出染色体上的基因的位置
                 gene_start = feature.location.start.position
+
                 gene_end = feature.location.end.position
                 
                 start = gene_start + up_region
                 end = gene_end - down_region
-                
+
                 if start == end:
                     ref = '-'
+
+                elif int(up_region) !=0 and int(down_region) == 0:
+                    ref = '-'
+
                 elif end > start:
+
                     print(gene_seq)
                     gene_seq = str(gene_seq)
-                    
+                    region = f'{0+up_region} : {len(gene_seq)-down_region}' 
                     ref = gene_seq[0+up_region : len(gene_seq)-down_region ]
                     print(start,end)
+
                 else:
                     ValueError('There is an issue with the editing location you provided')
 
                 chrom = record.id
                 strand = 'plus'
-                mutation_pos_index = start  
+                mutation_pos_index = start      
 
                 # #取目标序列的前100bp
                 # start_pos = max(gene_start - 100, 0)
@@ -72,8 +90,9 @@ def get_seq_by_geneid(gb_file, gene_id, up_region, down_region):
 
         if ref != '':
             break
-    if ref == '':
-        error_message = 'The region you will edit is not on the target genome'
+
+    if ref == '':  
+        error_message = f'{gene_id}:{up_region},{down_region}:The region you will edit is not on the target genome'
         raise ValueError(error_message)
 
     print("取到的东西：",ref, mutation_pos_index, chrom, strand)
@@ -141,7 +160,6 @@ def input_to_primer_template(input_file_path, genome, workdir, scene, gb_file=''
 
             num_lines_df=df.shape[0]
             for i in range(num_lines_df):
-
                 data=df.loc[i].values
                 #print(data)
                 mun_id=str(data[0])
@@ -151,11 +169,7 @@ def input_to_primer_template(input_file_path, genome, workdir, scene, gb_file=''
                     print(error_message)
                     return  error_message
                 else:
-                    if type(data[1] ) != 'str':
-                        print(  type(data[1] ), data[1], "?????????????????????????????")
-                     
-
-                    upstream = data[1].strip().upper()   
+                    upstream = data[1].strip().upper()
                     ref = data[2]
                     name = mun_id
                     if scene == 'both_sgRNA_primer' or scene == 'only_primer':
@@ -281,6 +295,8 @@ def input_to_primer_template(input_file_path, genome, workdir, scene, gb_file=''
             for i,v in df.iterrows():
                     
                 ref, mutation_pos_index, chrom, strand = get_seq_by_geneid(gb_file, v['Gene id'], v['Up region'], v['Down region'])
+
+
                 if 'Inserted sequence,Manipulation type' in input_header:
                         mu_type = v['Manipulation type']
                         seq_altered = v['Inserted sequence']
@@ -414,7 +430,7 @@ def create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,
         }   
     
     """   
-    if mutation_type ==  "insertion":
+    if mutation_type == "insertion":
         info_dict = {
             "seq_altered":alt,
             "type":mutation_type,
@@ -497,7 +513,7 @@ def main(data):
 
     #4.若上传的是基因组gb文件，生成fna文件
     if 'gb' in name:
-        genome_fna = basename(path) + '.fna'
+        genome_fna = 'xxx' + '.fna'
         gb_file = genome_path
         genome_path = os.path.join(data['data_preprocessing_workdir'], genome_fna)
         #解析gb文件生成fna文件
@@ -547,19 +563,19 @@ if __name__ == '__main__':
                 "scene":"only_sgRNA",
             }  
     data5 = {
-                "input_file_path":"./input/4-20-input.csv",
-                "ref_genome":"./input/eco.gb",
+                "input_file_path":"./input/任务3-同源臂500bp-05-24-input.csv", 
+                "ref_genome":"./input/GCF_000005845.2_ASM584v2_genomic.gbff",
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"both_sgRNA_primer",
             }
     data6 = {
                 "input_file_path":"./input/4-23-input.csv",
-                "ref_genome":"./input/eco.gb",
+                "ref_genome":"./input/GCF_000005845.2_ASM584v2_genomic.gbff",    
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"only_primer",
             }
     
-    a = main(data6)
+    a = main(data5)
 
     print(a)  
     
