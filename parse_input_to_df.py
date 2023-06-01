@@ -450,7 +450,7 @@ def create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,
         # print(genome_ref)
         if genome_ref.upper() == ref.upper():
             info_dict = {
-                "seq_altered":"" if alt=='-' else alt,
+                "seq_altered":"-" if alt=='-' else alt,
                 "type":mutation_type,
                 "ref":ref,
                 "strand":"plus" if strand == "+" else "minus",
@@ -563,7 +563,7 @@ if __name__ == '__main__':
                 "scene":"only_sgRNA",
             }  
     data5 = {
-                "input_file_path":"./input/任务3-同源臂500bp-05-24-input.csv", 
+                "input_file_path":"./input/05-10-input.csv",   
                 "ref_genome":"./input/GCF_000005845.2_ASM584v2_genomic.gbff",
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"both_sgRNA_primer",
@@ -575,7 +575,7 @@ if __name__ == '__main__':
                 "scene":"only_primer",
             }
     
-    a = main(data5)
+    a = main(data6)
 
     print(a)  
     
