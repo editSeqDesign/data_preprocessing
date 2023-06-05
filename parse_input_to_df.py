@@ -537,45 +537,76 @@ def main(data):
 
 if __name__ == '__main__':
 
-    data1 = {
-                "input_file_path":"./input/editor_info.csv",
-                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "scene":"only_sgRNA",  
-            }
-    data2 = {
-                "input_file_path":"./input/editor_info123.csv",
-                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "scene":"both_sgRNA_primer",
-            }
-    data3 = {
-                "input_file_path":"./input/sgRNA_editing_info.csv",
-                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "scene":"only_primer",  
-            }
-    
-    data4 = {
-                "input_file_path":"./input/4-21-input.csv",
-                "ref_genome":"./input/eco.gb",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "scene":"only_sgRNA",
-            }  
-    data5 = {
-                "input_file_path":"./input/05-10-input.csv",   
-                "ref_genome":"./input/GCF_000005845.2_ASM584v2_genomic.gbff",
-                "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
-                "scene":"both_sgRNA_primer",
-            }
-    data6 = {
+
+
+    call_method = 2 
+
+
+    if  call_method == 1:
+        data1 = {
+                    "input_file_path":"./input/editor_info.csv",
+                    "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                    "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                    "scene":"only_sgRNA",  
+                }
+        data2 = {
+                    "input_file_path":"./input/editor_info123.csv",
+                    "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                    "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                    "scene":"both_sgRNA_primer",
+                }
+        data3 = {
+                    "input_file_path":"./input/sgRNA_editing_info.csv",
+                    "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                    "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                    "scene":"only_primer",  
+                }
+        
+        data4 = {
+                    "input_file_path":"./input/4-21-input.csv",
+                    "ref_genome":"./input/eco.gb",
+                    "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                    "scene":"only_sgRNA",
+                }  
+        data5 = {
+                    "input_file_path":"./input/05-10-input.csv",   
+                    "ref_genome":"./input/GCF_000005845.2_ASM584v2_genomic.gbff",
+                    "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                    "scene":"both_sgRNA_primer",
+                }
+        data6 = {
                 "input_file_path":"./input/4-23-input.csv",
                 "ref_genome":"./input/GCF_000005845.2_ASM584v2_genomic.gbff",    
                 "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                 "scene":"only_primer",
             }
-    
-    a = main(data5)
 
-    print(a)  
+        data = data5
+
+    elif call_method == 2:
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--input', '-i', help='input config file', required=True)   
+        arguments = parser.parse_args()
+        input_file_path = arguments.input
+
+        with open(input_file_path,'r',encoding='utf8') as fp:
+            data = json.load(fp)
+
+
+    import time
+    time1=time.time()
+    a = main(data)
+    print(a)
+
+    time2=time.time()
+    print('耗时：'+str(time2-time1)+'s')     
+
+
+
+ 
+    
+
+
+
+      
     

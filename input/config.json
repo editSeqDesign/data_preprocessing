@@ -1,6 +1,10 @@
 {
-    "sence":"only_sgRNA",
-    "input_file_path":"./input/editor_info.csv",
-    "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
-    "data_preprocessing_workdir": "./output/"
+    "input_file_path":"./input/05-10-input.csv",   
+    "ref_genome":"./input/GCF_000005845.2_ASM584v2_genomic.gbff",
+    "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+    "scene":"both_sgRNA_primer"
 }
+
+
+
+
