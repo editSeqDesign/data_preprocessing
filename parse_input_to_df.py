@@ -575,7 +575,7 @@ if __name__ == '__main__':
                 "scene":"only_primer",
             }
     
-    a = main(data6)
+    a = main(data5)
 
     print(a)  
     
