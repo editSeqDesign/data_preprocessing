@@ -539,7 +539,7 @@ if __name__ == '__main__':
 
 
 
-    call_method = 2 
+    call_method = 1 
 
 
     if  call_method == 1:
@@ -581,7 +581,7 @@ if __name__ == '__main__':
                 "scene":"only_primer",
             }
 
-        data = data5
+        data = data2
 
     elif call_method == 2:
         parser = argparse.ArgumentParser()
