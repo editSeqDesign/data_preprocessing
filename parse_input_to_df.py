@@ -13,6 +13,33 @@ from os.path import exists,splitext,dirname,splitext,basename,realpath,abspath
 from Bio import SeqIO
 
 
+def get_geneID_from_gb( gb_file, feature_type):
+
+    records = SeqIO.parse(gb_file, "genbank")
+
+    gene_id_list = []
+    
+
+    for record in records:
+        for feature in record.features:
+
+            if feature.type == feature_type:
+                gene_id = feature.qualifiers.get("locus_tag", [])
+                gene_id = ','.join(gene_id)
+                gene_id_list.append(gene_id)
+
+    df = pd.DataFrame()
+    df['Gene id'] = gene_id_list
+    df.insert(0,'Name', '_del')
+    df['Name'] = df['Gene id'] + df['Name']
+    df.insert(2,'Up region', 0)
+    df.insert(3, 'Down region', 0)
+    df.insert(4,'Inserted sequence', '-')
+    df.insert(5, 'Manipulation type', 'deletion')
+
+
+    return df 
+
 def del_Unnamed(df):
     """
     Deletes all the unnamed columns
@@ -21,8 +48,6 @@ def del_Unnamed(df):
     """
     cols_del=[c for c in df.columns if 'Unnamed' in c]
     return df.drop(cols_del,axis=1)
-
-
 
 def gb_2_fna(gb_file,fna_file):
 
@@ -56,7 +81,6 @@ def get_seq_by_geneid(gb_file, gene_id, up_region, down_region):
                 gene_start = feature.location.start.position
 
                 gene_end = feature.location.end.position
-                
                 start = gene_start + up_region
                 end = gene_end - down_region
 
@@ -539,19 +563,20 @@ if __name__ == '__main__':
 
 
 
-    call_method = 1 
+    call_method = 1  
+
 
 
     if  call_method == 1:
         data1 = {
-                    "input_file_path":"./input/editor_info.csv",
-                    "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                    "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info.csv",
+                    "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
                     "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                     "scene":"only_sgRNA",  
                 }
         data2 = {
-                    "input_file_path":"./input/editor_info123.csv",
-                    "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                    "input_file_path":"/home/yanghe/program/data_preprocessing/input/editor_info123.csv",
+                    "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCA_000011325.1_ASM1132v1_genomic.fna",
                     "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                     "scene":"both_sgRNA_primer",
                 }
@@ -569,8 +594,8 @@ if __name__ == '__main__':
                     "scene":"only_sgRNA",
                 }  
         data5 = {
-                    "input_file_path":"./input/05-10-input.csv",   
-                    "ref_genome":"./input/GCF_000005845.2_ASM584v2_genomic.gbff",
+                    "input_file_path":"/home/yanghe/program/data_preprocessing/input/05-10-input.csv",   
+                    "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCF_000005845.2_ASM584v2_genomic.gbff",
                     "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                     "scene":"both_sgRNA_primer",
                 }
@@ -581,7 +606,23 @@ if __name__ == '__main__':
                 "scene":"only_primer",
             }
 
-        data = data2
+        #大肠全敲
+        data7 = {
+                    "input_file_path":"/home/yanghe/program/data_preprocessing/input/eco_all_knock_out.csv",
+                    "ref_genome":"/home/yanghe/program/data_preprocessing/input/eco.gb",
+                    "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                    "scene":"both_sgRNA_primer",
+                }
+        #大肠rna敲除
+        data8 = {
+                    "input_file_path":"/home/yanghe/program/data_preprocessing/input/10-13-input.csv",
+                    "ref_genome":"/home/yanghe/program/data_preprocessing/input/GCF_000005845.2_ASM584v2_genomic.gbff",
+                    "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
+                    "scene":"both_sgRNA_primer",
+                }
+
+
+        data = data8
 
     elif call_method == 2:
         parser = argparse.ArgumentParser()
@@ -592,6 +633,7 @@ if __name__ == '__main__':
         with open(input_file_path,'r',encoding='utf8') as fp:
             data = json.load(fp)
 
+         
 
     import time
     time1=time.time()
