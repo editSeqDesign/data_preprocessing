@@ -1,67 +1,101 @@
+  
+# data_preprocessing
 
 ## Project Introduction  
-This project mainly aims to standardize the editing information uploaded by users, in order to accurately locate the position of the editing area on the genome.According to the type of gene sequence file uploaded by users, this system mainly supports the parsing and operation of two types of files.
+data_preprocessing, as the data preprocessing module of AutoESDCas, its main function is to convert user input information into standard and standardized input information for AutoESDCas.Among them, for user input information, there are mainly two types supported: 1. the user provides the upstream sequence of the target to be edited on the genome, and 2. the user provides the coordinates of the target to be edited on the genome.At the same time, according to the main functions that AutoESDCas serves users, including: 1. designing only sgRNA, 2. designing only primers, 3. designing both sgRNA and primers, both types of input information also require relevant configurations.
 
-1.When a user uploads a genome file as an fna file and a matching editing information csv file, the system will perform a blast alignment based on the first 100 bp sequence of the user specified editing area to accurately locate it on the genome. Finally, the standard output results after localization will be output to serve downstream work
 
-    For downstream scenarios: it will be divided into 
-                                i.designing only sgRNA (only_sgRNA)
-                                ii.designing both sgRNA and related primers (both_sgRNA_primer) 
-                                iii.designing only primer (only_primer)
+## Installation
 
-    i:  data1 = {
-                "input_file_path":"./input/editor_info.csv",
-                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
-                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
-                "scene":"only_sgRNA"
-            }
-    ii: data2 = {
-                "input_file_path":"./input/editor_info123.csv",
-                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
-                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
-                "scene":"both_sgRNA_primer"
-            }
-    iii: data3 = {
-                "input_file_path":"./input/sgRNA_editing_info.csv",
-                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
-                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
-                "scene":"only_primer",  
-            }
+
+### python packages
+We suggest using Python 3.8 for AutoESD.
+
+```shell
+pip install -r requirements.txt
+
+```
+
+### blast+
+```shell
+wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.13.0+-x64-linux.tar.gz -O ~/ncbi-blast-2.13.0+-x64-linux.tar.gz
+
+tar -zxvf ncbi-blast-2.13.0+-x64-linux.tar.gz
+
+export PATH=~/ncbi-blast-2.13.0+/bin:$PATH
+
+```
+
+
+## Usage & Example
+
+### 1.the user provides the upstream sequence of the target to be edited on the genome.
+
+    input:
+        step1:
+            Upload genome fna file and target information CSV file to be edited
+
+        step2:
+            Select different task types and fill in configuration information
+                1.designing only sgRNA
+                        data1 = {
+                                    "input_file_path":"./input/designing_only_sgRNA_1.csv",
+                                    "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                                    "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
+                                    "scene":"only_sgRNA"
+                                }
+                2.designing only primers
+                        data2 = {  
+                                "input_file_path":"./input/designing_only_primers_1.csv",
+                                "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
+                                "scene":"only_primer",  
+                            }
+                3.designing both sgRNA and primers
+                        data2 = {
+                                    "input_file_path":"./input/designing_both_sgRNA_and_primers_1.csv",
+                                    "ref_genome":"./input/GCA_000011325.1_ASM1132v1_genomic.fna",
+                                    "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
+                                    "scene":"both_sgRNA_primer"
+                                }
+    ```shell
+        python parse_input_to_df.py 
+    ```
 
     output: ['/home/XXX/tmp/data_preprocessing/output/info_input.csv', '/home/XXX/tmp/data_preprocessing/output/xxx.fna']
 
-2.When a user uploads a genome gb file and a matching editing information csv file, the system will first convert it into a genome fna file, then extract the editing region sequence based on the editing region provided by the user, and finally output the standardization results to serve downstream work.
+### 2.the user provides the coordinates of the target to be edited on the genome.
 
-    For downstream scenarios: it will be divided into
-                                i.designing only sgRNA (only_sgRNA) 
-                                ii.designing both sgRNA and related primers (both_sgRNA_primer)
-                                iii.designing only primer (only_primer)
+    input:
+        step1:
+            Upload genome gb file and target information CSV file to be edited
 
-    i:  data4 = {
-                "input_file_path":"./input/4-21-input.csv",
-                "ref_genome":"./input/eco.gb",
-                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
-                "scene":"only_sgRNA",
-            }
-    ii: data5 = {
-                "input_file_path":"./input/4-20-input.csv",
-                "ref_genome":"./input/eco.gb",
-                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
-                "scene":"both_sgRNA_primer",
-            }
-    iii: data6 = {
-                "input_file_path":"./input/4-23-input.csv",
-                "ref_genome":"./input/eco.gb",
-                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
-                "scene":"only_primer",  
-            }
+        step2:
+            Select different task types and fill in configuration information
+                1.designing only sgRNA
+                        data1 = {
+                                    "input_file_path":"./input/designing_only_sgRNA_2.csv",
+                                    "ref_genome":"./input/eco.gb",
+                                    "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
+                                    "scene":"only_sgRNA"
+                                }
+                2.designing only primers
+                        data2 = {  
+                                "input_file_path":"./input/designing_only_primers_2.csv",
+                                "ref_genome":"./input/eco.gb",
+                                "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
+                                "scene":"only_primer",  
+                            }
+                3.designing both sgRNA and primers
+                        data2 = {
+                                    "input_file_path":"./input/designing_both_sgRNA_and_primers_2.csv",
+                                    "ref_genome":"./input/eco.gb",
+                                    "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
+                                    "scene":"both_sgRNA_primer"
+                                }
+    ```shell
+        python parse_input_to_df.py 
+    ```
 
     output: ['/home/XXX/tmp/data_preprocessing/output/info_input.csv', '/home/XXX/tmp/data_preprocessing/output/xxx.fna']
 
-## product enviroment
- python 3.8
-## Software
-$ pip install requirements.txt
-
-## use
-python parse_input_to_df

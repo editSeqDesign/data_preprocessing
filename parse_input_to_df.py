@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+# @FileName     :parse_input_to_df.py
+# @Time         :2023/10/27 11:19:24
+# @Author       :YangChunhe
+# @Email        :2393492851@qq.com
+# @Description  :file content  
+
 import pandas as pd
 from Bio import SeqIO 
 import os,sys
@@ -9,11 +17,16 @@ from Bio.SeqRecord import SeqRecord
 import argparse   
 import json
 from os.path import exists,splitext,dirname,splitext,basename,realpath,abspath
-
 from Bio import SeqIO
 
 
 def get_geneID_from_gb( gb_file, feature_type):
+    
+    """_summary_
+
+    Returns:
+        _type_: _description_
+    """
 
     records = SeqIO.parse(gb_file, "genbank")
 
@@ -466,8 +479,7 @@ def create_mutation_info(mutation_pos_index,strand,chrom,name,ref,mutation_type,
             "region":chrom+ ':' +  str(mutation_pos_index) +'-'+ str(int(mutation_pos_index)+len(ref))
         }
         return info_dict      
-
-#         return info_dict
+#   return info_dict
     if mutation_type in ["deletion","substitution"]:
         genome_ref = record[mutation_pos_index:mutation_pos_index+len(ref)]
         
@@ -560,12 +572,7 @@ def main(data):
         return chopchop_input
 
 if __name__ == '__main__':
-
-
-
     call_method = 1  
-
-
 
     if  call_method == 1:
         data1 = {
@@ -620,8 +627,7 @@ if __name__ == '__main__':
                     "data_preprocessing_workdir":"/home/yanghe/tmp/data_preprocessing/output/",
                     "scene":"both_sgRNA_primer",
                 }
-
-
+          
         data = data8
 
     elif call_method == 2:
@@ -632,19 +638,17 @@ if __name__ == '__main__':
 
         with open(input_file_path,'r',encoding='utf8') as fp:
             data = json.load(fp)
-
-         
-
+ 
     import time
     time1=time.time()
-    a = main(data)
+    a = main(data2)
     print(a)
 
     time2=time.time()
     print('耗时：'+str(time2-time1)+'s')     
 
 
-
+  
  
     
 
