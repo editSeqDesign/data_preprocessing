@@ -58,10 +58,10 @@ export PATH=~/ncbi-blast-2.13.0+/bin:$PATH
                                     "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
                                     "scene":"both_sgRNA_primer"
                                 }
-    ```shell
-        python parse_input_to_df.py 
-    ```
-
+    execute: 
+        ```shell
+            python parse_input_to_df.py 
+        ```
     output: ['/home/XXX/tmp/data_preprocessing/output/info_input.csv', '/home/XXX/tmp/data_preprocessing/output/xxx.fna']
 
 ### 2.the user provides the coordinates of the target to be edited on the genome.
@@ -93,9 +93,8 @@ export PATH=~/ncbi-blast-2.13.0+/bin:$PATH
                                     "data_preprocessing_workdir":"/home/XXX/tmp/data_preprocessing/output/",
                                     "scene":"both_sgRNA_primer"
                                 }
-    ```shell
+    execute:
         python parse_input_to_df.py 
-    ```
 
     output: ['/home/XXX/tmp/data_preprocessing/output/info_input.csv', '/home/XXX/tmp/data_preprocessing/output/xxx.fna']
 
